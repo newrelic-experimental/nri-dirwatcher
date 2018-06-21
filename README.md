@@ -4,7 +4,7 @@
 ### [Download The Latest Release HERE](https://source.datanerd.us/xxxxxxxx)
 
 ### Dir Watcher NRI Integration Screenshots:
-![alt text](https://source.datanerd.us/ayork/sbuxExam/blob/master/images/ExamInsights.jpg "Logo Title Text 1")
+![alt text](https://source.datanerd.us/FIT/DirWatcher/blob/master/images/DirWatcher.jpg "Logo Title Text 1")
 
 
 ### Requirements
@@ -15,10 +15,10 @@
 
 
 * Install 3 files noted below in the 3 seperate folders
-* `exam.exe` Executable located in Releases
+* `dirwatcher.exe` Executable located in Releases
 * Edit `newrelic-infra-exam-config.yml` to add `Dpass`
 * Resart NRI Agent
-* Verify data in NewRelic under INSIGHTS Custom Event `EXAM`
+* Verify data in NewRelic under NRI Inventory
 
 ### File Structure _(Note 3 different folders & Executable may have a different file extension based on Operating System)_
 * `C:\Program Files\New Relic\newrelic-infra\integrations.d\newrelic-infra-dirwatcher-config.yml`
