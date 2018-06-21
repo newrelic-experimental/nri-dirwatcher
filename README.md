@@ -1,5 +1,5 @@
 # Starbucks Directory Watcher --> NRI Integration
-* Reports contents of a specified director to NRI Inventory
+* Reports contents of a specified directory to NRI Inventory
 
 ### [Download The Latest Release HERE](https://source.datanerd.us/xxxxxxxx)
 
