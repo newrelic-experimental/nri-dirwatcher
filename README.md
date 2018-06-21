@@ -16,7 +16,7 @@
 
 * Install 3 files noted below in the 3 seperate folders
 * `dirwatcher.exe` Executable located in Releases
-* Edit `newrelic-infra-exam-config.yml` to add `Dpass`
+* Edit `newrelic-infra-exam-config.yml` & `newrelic-infra-dirwatcher-definition.yml` as desired
 * Resart NRI Agent
 * Verify data in NewRelic under NRI Inventory
 
