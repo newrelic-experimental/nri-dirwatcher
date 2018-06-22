@@ -1,9 +1,9 @@
-# Starbucks Directory Watcher --> NRI Integration
-* Reports contents of a specified directory to NRI Inventory
+# Directory Watcher - NR Infrastructure On-Host Integration
+Reports contents of a specified directory to NRI Inventory
 
 ### [Download The Latest Release HERE](https://source.datanerd.us/FIT/DirWatcher/releases/latest)
 
-### Dir Watcher NRI Integration Screenshots:
+### Screenshots
 ![alt text](https://source.datanerd.us/FIT/DirWatcher/blob/master/images/DirWatcher.jpg "Super Cool Screenshot of DirWatcher entries in Infra Inventory")
 
 ### Requirements
@@ -13,11 +13,11 @@
 
 * Install 3 files noted below in the 3 seperate folders
   * `dirwatcher` or `dirwatcher.exe` executable located in Releases
-  * `newrelic-infra-dirwatcher-config.yml` & `newrelic-infra-dirwatcher-definition.yml` created per the examples below](#example-config-files)
+  * `newrelic-infra-dirwatcher-config.yml` & `newrelic-infra-dirwatcher-definition.yml` [created per the examples below](#example-config-files)
 * Resart NRI Agent
 * Verify data in NewRelic under NRI Inventory
 
-### File Structure _(Note 3 different folders & Executable may have a different file extension based on Operating System)_
+### File Structure
 
 ##### Windows
 * `C:\Program Files\New Relic\newrelic-infra\integrations.d\newrelic-infra-dirwatcher-config.yml`
@@ -32,7 +32,7 @@
 ### Example config files
 
 #### newrelic-infra-dirwatcher-definition.yml
-* Interval currently set to run at 1 minute.
+Interval currently set to run at 1 minute.
 ```
 #
 # New Relic Infrastructure DirWatcher Integration
@@ -49,7 +49,6 @@ commands:
     interval: 3600
 
 ```
-
 #### newrelic-infra-dirwatcher-config.yml
 ```
 #
