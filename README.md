@@ -1,32 +1,37 @@
 # Starbucks Directory Watcher --> NRI Integration
 * Reports contents of a specified directory to NRI Inventory
 
-### [Download The Latest Release HERE](https://source.datanerd.us/xxxxxxxx)
+### [Download The Latest Release HERE](https://source.datanerd.us/FIT/DirWatcher/releases/latest)
 
 ### Dir Watcher NRI Integration Screenshots:
-![alt text](https://source.datanerd.us/FIT/DirWatcher/blob/master/images/DirWatcher.jpg "Logo Title Text 1")
-
+![alt text](https://source.datanerd.us/FIT/DirWatcher/blob/master/images/DirWatcher.jpg "Super Cool Screenshot of DirWatcher entries in Infra Inventory")
 
 ### Requirements
 * NRI Agent
 
-
 ### NRI Configuration
 
-
 * Install 3 files noted below in the 3 seperate folders
-* `dirwatcher.exe` Executable located in Releases
-* Edit `newrelic-infra-exam-config.yml` & `newrelic-infra-dirwatcher-definition.yml` as desired
+  * `dirwatcher` or `dirwatcher.exe` executable located in Releases
+  * `newrelic-infra-dirwatcher-config.yml` & `newrelic-infra-dirwatcher-definition.yml` created per the examples below](#example-config-files)
 * Resart NRI Agent
 * Verify data in NewRelic under NRI Inventory
 
 ### File Structure _(Note 3 different folders & Executable may have a different file extension based on Operating System)_
+
+##### Windows
 * `C:\Program Files\New Relic\newrelic-infra\integrations.d\newrelic-infra-dirwatcher-config.yml`
 * `C:\Program Files\New Relic\newrelic-infra\custom-integrations\newrelic-infra-dirwatcher-definition.yml`
 * `C:\Program Files\New Relic\newrelic-infra\custom-integrations\newrelic-infra-dirwatcher\dirwatcher.exe`
 
+##### Linux
+* `/etc/newrelic-infra/integrations.d/newrelic-infra-dirwatcher-config.yml`
+* `/var/db/newrelic-infra/custom-integrations/newrelic-infra-dirwatcher-definition.yml`
+* `/var/db/newrelic-infra/custom-integrations/newrelic-infra-dirwatcher/dirwatcher`
 
-#### Example newrelic-infra-dirwatcher-definition.yml
+### Example config files
+
+#### newrelic-infra-dirwatcher-definition.yml
 * Interval currently set to run at 1 minute.
 ```
 #
@@ -41,10 +46,11 @@ commands:
       - .\newrelic-infra-dirwatcher\dirwatcher.exe
       - --inventory
     prefix: config/feature-flags
-    interval: 3600 
-    
+    interval: 3600
+
 ```
-#### Example newrelic-infra-dirwatcher-config.yml
+
+#### newrelic-infra-dirwatcher-config.yml
 ```
 #
 # New Relic Infrastructure DirWatcher Integration
@@ -55,25 +61,93 @@ instances:
     command: inventory
     arguments:
       dir_name: C:\crdata\mutex
-``` 
+      do_recurse: true
+```
 
 ### Testing Locally
 
 * You can run the NRI Integration Exectuable locally by manually passing in the required arguments.
 * This can help when testing a new feature, or prior to running as an NRI Integration on a new server.
 
-#### Example Command:
+#### Example Command
 ```
-PS C:\Program Files\New Relic\newrelic-infra\custom-integrations\newrelic-infra-dirwatcher> .\dirwatcher.exe -dir_name C:\crdata\mutex -pretty -inventory
+/var/db/newrelic-infra/custom-integrations/newrelic-infra-dirwatcher/dirwatcher -dir_name /tmp -pretty -inventory -do_recurse true
 ```
-### OUTPUT
-* You can ignore this WARN message when testing locally as it is expected
+#### Output
+You can ignore WARN messages like these when testing locally as it is expected:
 ```
-WARN[0000] Environment variable NRIA_CACHE_PATH is not set, using default C:\Users\ayork\AppData\Local\Temp\exam.exe.json
+WARN[0000] Environment variable NRIA_CACHE_PATH is not set, using default /tmp/dirwatcher.json
+WARN[0000] Cache file (/tmp/dirwatcher.json) is older than 1m0s, skipping loading from disk.
 ```
-#### Expected JSON Blob
-* Use this to confirm you're receiving the expected data
-```
-{"name":"com.newrelic.dirwatcher","protocol_version":"1","integration_version":"0.1.0","metrics":[{"event_type":"DirWatcher"}],"inventory":{"ActivationHotButtonsDlg.flg":{"value":"enabled"},"AllowCreditTransactionVoid.flg":{"value":"enabled"},"CupFundRoundUp.flg":{"value":"enabled"},"DigitalTips.flg":{"value":"enabled"},"FilterAskMe.flg":{"value":"enabled"},"LabelItemsCountOn.flg":{"value":"enabled"},"LibraOn.xml":{"value":"enabled"},"McmUseTls.flg":{"value":"enabled"},"NewRefundPolicyOn.flg":{"value":"enabled"},"NoRewardsAuthenticate.flg":{"value":"enabled"}},"events":[]}
-
+The command should return a JSON blob similar to the one seen here:
+```json
+{
+  "name": "com.newrelic.dirwatcher",
+  "protocol_version": "1",
+  "integration_version": "0.1.0",
+  "metrics": [],
+  "inventory": {
+    "/tmp/": {
+      "fileSize": 4096,
+      "isDir": true,
+      "modTime": "2018-06-22T12:55:01.200689498-07:00",
+      "mode": "dtrwxrwxrwx"
+    },
+    "/tmp/.ICE-unix": {
+      "fileSize": 4096,
+      "isDir": true,
+      "modTime": "2018-05-31T10:04:14.894378146-07:00",
+      "mode": "dtrwxrwxrwx"
+    },
+    "/tmp/.ICE-unix/1710": {
+      "fileSize": 0,
+      "isDir": false,
+      "modTime": "2018-05-31T10:04:14.894378146-07:00",
+      "mode": "Srwxrwxrwx"
+    },
+    "/tmp/.ICE-unix/767": {
+      "fileSize": 0,
+      "isDir": false,
+      "modTime": "2018-05-31T09:51:09.455191936-07:00",
+      "mode": "Srwxrwxrwx"
+    },
+    "/tmp/.Test-unix": {
+      "fileSize": 4096,
+      "isDir": true,
+      "modTime": "2018-05-31T09:51:07.611191992-07:00",
+      "mode": "dtrwxrwxrwx"
+    },
+    "/tmp/.X0-lock": {
+      "fileSize": 11,
+      "isDir": false,
+      "modTime": "2018-05-31T10:04:15.326378133-07:00",
+      "mode": "-r--r--r--"
+    },
+    "/tmp/.X1024-lock": {
+      "fileSize": 11,
+      "isDir": false,
+      "modTime": "2018-05-31T09:51:10.571191902-07:00",
+      "mode": "-r--r--r--"
+    },
+    "/tmp/.X11-unix": {
+      "fileSize": 4096,
+      "isDir": true,
+      "modTime": "2018-05-31T10:04:15.326378133-07:00",
+      "mode": "dtrwxrwxrwx"
+    },
+    "/tmp/.X11-unix/X0": {
+      "fileSize": 0,
+      "isDir": false,
+      "modTime": "2018-05-31T10:04:15.326378133-07:00",
+      "mode": "Srwxrwxr-x"
+    },
+    "/tmp/.X11-unix/X1024": {
+      "fileSize": 0,
+      "isDir": false,
+      "modTime": "2018-05-31T09:51:10.575191902-07:00",
+      "mode": "Srwxrwxr-x"
+    }
+  },
+  "events": []
+}
 ```
