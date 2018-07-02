@@ -17,7 +17,7 @@ type argumentList struct {
 	sdkArgs.DefaultArgumentList
 	// Filelocation string `default:"/Users/ayork/go/src/posready" help:"File location to monitor"`
 	// Filename     string `default:"PosReady.flg" help:"File name being monitored"`
-	DirName   string `default:"C:\\Program Files\\New Relic\\newrelic-infra\\custom-integrations\\newrelic-infra-mssql" help:"File name being monitored"`
+	DirName   string `default:"C:\\temp" help:"File name being monitored"`
 	DoRecurse string `default:"false"`
 }
 
@@ -66,20 +66,39 @@ func insertFileInfo(filename string, fileinfo os.FileInfo, inventory *sdk.Invent
 }
 
 func populateMetrics(ms *metric.MetricSet) error {
-	// Insert here the logic of your integration to get the metrics data
-	// files, err := ioutil.ReadDir(args.DirName)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	//
-	// for _, f := range files {
-	// 	// log.Debug(args.Filename + " Found")
-	// 	// log.Debug("File Location: " + args.Filelocation)
-	// 	// fmt.Println(f.Name())
-	// 	// ms.SetMetric(f.Name(), "ENABLED", metric.ATTRIBUTE)
-	// 	ms.SetMetric(f.Name(), "ENABLED", metric.ATTRIBUTE)
-	// }
+	var fileSize int64 = 0
+	fileCount := 0
+	fixedName := args.DirName
+	if !strings.HasSuffix("/", args.DirName) {
+		fixedName += "/"
+	}
 
+	if strings.ToLower(args.DoRecurse) == "true" {
+		err := filepath.Walk(fixedName, func(path string, finfo os.FileInfo, err error) error {
+			if err != nil {
+				log.Fatal(err)
+				return nil
+			}
+			fileSize += finfo.Size()
+			fileCount++
+			return nil
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		files, err := ioutil.ReadDir(args.DirName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, finfo := range files {
+			fileSize += finfo.Size()
+			fileCount++
+		}
+	}
+	ms.SetMetric("dirPath", fixedName, metric.ATTRIBUTE)
+	ms.SetMetric("fileSize", fileSize, metric.GAUGE)
+	ms.SetMetric("fileCount", fileCount, metric.GAUGE)
 	return nil
 }
 
@@ -94,7 +113,6 @@ func main() {
 	}
 
 	if args.All || args.Metrics {
-		// fatalIfNotDefined(args.fileName, "Missing fileName parameter")
 		ms := integration.NewMetricSet("DirWatcher")
 		fatalIfErr(populateMetrics(ms))
 	}
