@@ -3,4 +3,5 @@ src/pkg/**
 src/src/**
 .DS_Store
 src/dirwatcher
-*.exe
+**/*.exe
+dirwatcher/**

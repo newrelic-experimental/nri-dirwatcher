@@ -1,7 +1,7 @@
 name: com.newrelic.dirwatcher
 description: DirWatcher
 protocol_version: 1
-os: windows
+os: linux
 commands:
   inventory:
     command:
