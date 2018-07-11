@@ -5,20 +5,23 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"strconv"
 
 	sdkArgs "github.com/newrelic/infra-integrations-sdk/args"
 	"github.com/newrelic/infra-integrations-sdk/log"
 	"github.com/newrelic/infra-integrations-sdk/metric"
 	"github.com/newrelic/infra-integrations-sdk/sdk"
-	// "fmt"
 )
 
 type argumentList struct {
 	sdkArgs.DefaultArgumentList
-	// Filelocation string `default:"/Users/ayork/go/src/posready" help:"File location to monitor"`
-	// Filename     string `default:"PosReady.flg" help:"File name being monitored"`
 	DirName   string `default:"C:\\temp" help:"File name being monitored"`
-	DoRecurse string `default:"false"`
+	DoRecurse string `default:"false"` help:"Whether to monitor top level of directory or recursively walk the dir and its subdirs"
+}
+
+type dirWatcherFile struct {
+	DWFInfo   os.FileInfo
+	DWFPath		string
 }
 
 const (
@@ -28,7 +31,8 @@ const (
 
 var args argumentList
 
-func populateInventory(inventory sdk.Inventory) error {
+func getFileList() []dirWatcherFile {
+	var dwflist []dirWatcherFile
 	if strings.ToLower(args.DoRecurse) == "true" {
 		fixedName := args.DirName
 		if !strings.HasSuffix("/", args.DirName) {
@@ -39,66 +43,45 @@ func populateInventory(inventory sdk.Inventory) error {
 				log.Fatal(err)
 				return nil
 			}
-			insertFileInfo(filepath.ToSlash(path), finfo, &inventory)
+			dwflist = append(dwflist, dirWatcherFile{DWFInfo: finfo, DWFPath: path})
 			return nil
 		})
 		if err != nil {
 			log.Fatal(err)
 		}
+		return dwflist
 	} else {
-		files, err := ioutil.ReadDir(args.DirName)
+		flist, err := ioutil.ReadDir(args.DirName)
+		for _, finfo := range flist {
+			filename := filepath.ToSlash(args.DirName+"/"+finfo.Name())
+			dwflist = append(dwflist, dirWatcherFile{DWFInfo: finfo, DWFPath: filename})
+		}
 		if err != nil {
 			log.Fatal(err)
 		}
-		for _, finfo := range files {
-			insertFileInfo(filepath.ToSlash(args.DirName+"/"+finfo.Name()), finfo, &inventory)
-		}
+		return dwflist
 	}
+}
 
+func populateInventory(dwflist []dirWatcherFile, inventory sdk.Inventory) error {
+	for _, dwfile := range dwflist {
+		inventory.SetItem(dwfile.DWFPath, "fileSize", dwfile.DWFInfo.Size())
+		inventory.SetItem(dwfile.DWFPath, "mode", dwfile.DWFInfo.Mode().String())
+		inventory.SetItem(dwfile.DWFPath, "modTime", dwfile.DWFInfo.ModTime().Unix())
+		inventory.SetItem(dwfile.DWFPath, "isDir", strconv.FormatBool(dwfile.DWFInfo.IsDir()))
+	}
 	return nil
 }
 
-func insertFileInfo(filename string, fileinfo os.FileInfo, inventory *sdk.Inventory) {
-	inventory.SetItem(filename, "fileSize", fileinfo.Size())
-	inventory.SetItem(filename, "mode", fileinfo.Mode().String())
-	inventory.SetItem(filename, "modTime", fileinfo.ModTime())
-	inventory.SetItem(filename, "isDir", fileinfo.IsDir())
-}
-
-func populateMetrics(ms *metric.MetricSet) error {
-	var fileSize int64 = 0
-	fileCount := 0
-	fixedName := args.DirName
-	if !strings.HasSuffix("/", args.DirName) {
-		fixedName += "/"
+func populateMetrics(dwflist []dirWatcherFile, integration *sdk.Integration) error {
+	for _, dwfile := range dwflist {
+		ms := integration.NewMetricSet("DirWatcher")
+		ms.SetMetric("filePath", dwfile.DWFPath, metric.ATTRIBUTE)
+		ms.SetMetric("fileSize", dwfile.DWFInfo.Size(), metric.GAUGE)
+		ms.SetMetric("mode", dwfile.DWFInfo.Mode().String(), metric.ATTRIBUTE)
+		ms.SetMetric("modTime", dwfile.DWFInfo.ModTime().Unix(), metric.GAUGE)
+		ms.SetMetric("isDir", strconv.FormatBool(dwfile.DWFInfo.IsDir()), metric.ATTRIBUTE)
 	}
-
-	if strings.ToLower(args.DoRecurse) == "true" {
-		err := filepath.Walk(fixedName, func(path string, finfo os.FileInfo, err error) error {
-			if err != nil {
-				log.Fatal(err)
-				return nil
-			}
-			fileSize += finfo.Size()
-			fileCount++
-			return nil
-		})
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		files, err := ioutil.ReadDir(args.DirName)
-		if err != nil {
-			log.Fatal(err)
-		}
-		for _, finfo := range files {
-			fileSize += finfo.Size()
-			fileCount++
-		}
-	}
-	ms.SetMetric("dirPath", fixedName, metric.ATTRIBUTE)
-	ms.SetMetric("fileSize", fileSize, metric.GAUGE)
-	ms.SetMetric("fileCount", fileCount, metric.GAUGE)
 	return nil
 }
 
@@ -108,14 +91,16 @@ func main() {
 	integration, err := sdk.NewIntegration(integrationName, integrationVersion, &args)
 	fatalIfErr(err)
 
+	filelist := getFileList()
+
 	if args.All || args.Inventory {
-		fatalIfErr(populateInventory(integration.Inventory))
+		fatalIfErr(populateInventory(filelist, integration.Inventory))
 	}
 
 	if args.All || args.Metrics {
-		ms := integration.NewMetricSet("DirWatcher")
-		fatalIfErr(populateMetrics(ms))
+		fatalIfErr(populateMetrics(filelist, integration))
 	}
+
 	fatalIfErr(integration.Publish())
 }
 

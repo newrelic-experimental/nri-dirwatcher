@@ -21,8 +21,7 @@ commands:
   both:
     command:
       - .\newrelic-infra-dirwatcher\dirwatcher.exe
-      - --inventory
-      - --metrics
+      - --all
     prefix: config/dirwatcher
     event_name: DirWatcher
     interval: 60
