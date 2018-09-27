@@ -1,152 +1,104 @@
-# Directory Watcher - NR Infrastructure On-Host Integration
-Reports contents of a specified directory to NRI Inventory
+# Directory Watcher On-Host Integration
 
-### [Download The Latest Release HERE](https://source.datanerd.us/FIT/DirWatcher/releases/latest)
+Screenshot:
 
-### Screenshots
-![alt text](https://source.datanerd.us/FIT/DirWatcher/blob/master/images/DirWatcher.jpg "Super Cool Screenshot of DirWatcher entries in Infra Inventory")
+![dirwatch-screenshot](./docs/dirwatch-screenshot.jpg)
 
-### Requirements
-* NRI Agent
+## Compatibility
 
-### NRI Configuration
+* Windows x86/amd64
+* Linux 386/amd64
 
-* Install 3 files noted below in the 3 seperate folders
-  * `dirwatcher` or `dirwatcher.exe` executable located in Releases
-  * `newrelic-infra-dirwatcher-config.yml` & `newrelic-infra-dirwatcher-definition.yml` [created per the examples below](#example-config-files)
-* Resart NRI Agent
-* Verify data in NewRelic under NRI Inventory
+See `build.sh` and `Development` below.
 
-### File Structure
+## Installation
 
-##### Windows
-* `C:\Program Files\New Relic\newrelic-infra\integrations.d\newrelic-infra-dirwatcher-config.yml`
-* `C:\Program Files\New Relic\newrelic-infra\custom-integrations\newrelic-infra-dirwatcher-definition.yml`
-* `C:\Program Files\New Relic\newrelic-infra\custom-integrations\newrelic-infra-dirwatcher\dirwatcher.exe`
+### Linux
 
-##### Linux
-* `/etc/newrelic-infra/integrations.d/newrelic-infra-dirwatcher-config.yml`
-* `/var/db/newrelic-infra/custom-integrations/newrelic-infra-dirwatcher-definition.yml`
-* `/var/db/newrelic-infra/custom-integrations/newrelic-infra-dirwatcher/dirwatcher`
+1. Download the latest `.tar.gz` from Releases
+2. Upload to host
+3. Untar and enter resulting folder
+4. Run `sudo ./install.sh`
 
-### Example config files
+### Windows
 
-#### newrelic-infra-dirwatcher-definition.yml
-Interval currently set to run at 1 minute.
+1. Download the latest `.zip` from Releases
+2. Upload to host
+3. Unzip and enter resulting folder
+4. From Administrator command prompt, run `.\install.ps1`
+
+## Configuration  
+
+Edit the `*-definition-[linux|windows].yml` folder before running install
+script.
+
+Or, modify the `definition` file after install and restart infra:
+
+**Windows:** `C:\Program Files\New Relic\custom-integrations\`
+
+**Linux:** `/var/db/newrelic-infra/custom-integrations/`
+
+### DirWatcher
+
+Dirwatcher recursively scans the specified directories, separated by commas, and reports back the directory summary along with the oldest and newest file stats.
+
+#### Command Line Example:
+
 ```
-#
-# New Relic Infrastructure DirWatcher Integration
-#
-name: com.newrelic.dirwatcher
-description: DirWatcher
-protocol_version: 1
+--dirwatch="\Dir1,\Dir2,\Dir3\subfolder"
+```
+
+#### Linux Configuration:
+
+`newrelic-fs-definition-linux.yml`:
+
+```yaml
 commands:
-  inventory:
+  metrics:
     command:
-      - .\newrelic-infra-dirwatcher\dirwatcher.exe
-      - --inventory
-    prefix: config/feature-flags
-    interval: 3600
+      - ./fs/fs
+    interval: 30
+```
 
-```
-#### newrelic-infra-dirwatcher-config.yml
-```
-#
-# New Relic Infrastructure DirWatcher Integration
-#
-integration_name: com.newrelic.dirwatcher
+`newrelic-fs-config-linux.yml`:
+
+```yaml
+integration_name: com.newrelic.fs
+
 instances:
-  - name: dirwatcher-inventory
-    command: inventory
+  - name: com.newrelic.fs.tmp
+    command: metrics
     arguments:
-      dir_name: C:\crdata\mutex
-      do_recurse: true
+      DIRWATCH: "/tmp"
+      DIRWATCH_RECURSE: true
+  - name: com.newrelic.fs.other
+    command: metrics
+    arguments:
+      DIRWATCH: "/etc,/var/log"
+      DIRWATCH_RECURSE: false
 ```
 
-### Testing Locally
+`newrelic-fs-config-windows.yml`:
 
-* You can run the NRI Integration Exectuable locally by manually passing in the required arguments.
-* This can help when testing a new feature, or prior to running as an NRI Integration on a new server.
+```yaml
+integration_name: com.newrelic.fs
 
-#### Example Command
+instances:
+  - name: com.newrelic.fs.tmp
+    command: metrics
+    arguments:
+      DIRWATCH: "C:\\SomeDirectoryToRecurse"
+      DIRWATCH_RECURSE: true
+  - name: com.newrelic.fs.other
+    command: metrics
+    arguments:
+      DIRWATCH: "C:\\ProgramFiles,C:\\Windows"
+      DIRWATCH_RECURSE: false
 ```
-/var/db/newrelic-infra/custom-integrations/newrelic-infra-dirwatcher/dirwatcher -dir_name /tmp -pretty -inventory -do_recurse true
-```
-#### Output
-You can ignore WARN messages like these when testing locally as it is expected:
-```
-WARN[0000] Environment variable NRIA_CACHE_PATH is not set, using default /tmp/dirwatcher.json
-WARN[0000] Cache file (/tmp/dirwatcher.json) is older than 1m0s, skipping loading from disk.
-```
-The command should return a JSON blob similar to the one seen here:
-```json
-{
-  "name": "com.newrelic.dirwatcher",
-  "protocol_version": "1",
-  "integration_version": "0.1.0",
-  "metrics": [],
-  "inventory": {
-    "/tmp/": {
-      "fileSize": 4096,
-      "isDir": true,
-      "modTime": "2018-06-22T12:55:01.200689498-07:00",
-      "mode": "dtrwxrwxrwx"
-    },
-    "/tmp/.ICE-unix": {
-      "fileSize": 4096,
-      "isDir": true,
-      "modTime": "2018-05-31T10:04:14.894378146-07:00",
-      "mode": "dtrwxrwxrwx"
-    },
-    "/tmp/.ICE-unix/1710": {
-      "fileSize": 0,
-      "isDir": false,
-      "modTime": "2018-05-31T10:04:14.894378146-07:00",
-      "mode": "Srwxrwxrwx"
-    },
-    "/tmp/.ICE-unix/767": {
-      "fileSize": 0,
-      "isDir": false,
-      "modTime": "2018-05-31T09:51:09.455191936-07:00",
-      "mode": "Srwxrwxrwx"
-    },
-    "/tmp/.Test-unix": {
-      "fileSize": 4096,
-      "isDir": true,
-      "modTime": "2018-05-31T09:51:07.611191992-07:00",
-      "mode": "dtrwxrwxrwx"
-    },
-    "/tmp/.X0-lock": {
-      "fileSize": 11,
-      "isDir": false,
-      "modTime": "2018-05-31T10:04:15.326378133-07:00",
-      "mode": "-r--r--r--"
-    },
-    "/tmp/.X1024-lock": {
-      "fileSize": 11,
-      "isDir": false,
-      "modTime": "2018-05-31T09:51:10.571191902-07:00",
-      "mode": "-r--r--r--"
-    },
-    "/tmp/.X11-unix": {
-      "fileSize": 4096,
-      "isDir": true,
-      "modTime": "2018-05-31T10:04:15.326378133-07:00",
-      "mode": "dtrwxrwxrwx"
-    },
-    "/tmp/.X11-unix/X0": {
-      "fileSize": 0,
-      "isDir": false,
-      "modTime": "2018-05-31T10:04:15.326378133-07:00",
-      "mode": "Srwxrwxr-x"
-    },
-    "/tmp/.X11-unix/X1024": {
-      "fileSize": 0,
-      "isDir": false,
-      "modTime": "2018-05-31T09:51:10.575191902-07:00",
-      "mode": "Srwxrwxr-x"
-    }
-  },
-  "events": []
-}
-```
+
+## Development
+
+All `./vendor` assets are included while developing
+`source.datanerd.us/FIT/nri-common/...` common packages.
+
+Use `./build.sh fs` to build installation packages and/or Release.

@@ -1,9 +1,5 @@
-
-src/pkg/**
-src/src/**
+Library/
+bin/
+build/
 .DS_Store
-src/dirwatcher
-**/*.exe
-dirwatcher/**
-src/test.json
-**/*.zip
+vendor/

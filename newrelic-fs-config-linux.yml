@@ -1,0 +1,13 @@
+integration_name: com.newrelic.fs
+
+instances:
+  - name: com.newrelic.fs.tmp
+    command: metrics
+    arguments:
+      DIRWATCH: "/tmp"
+      DIRWATCH_RECURSE: true
+  - name: com.newrelic.fs.other
+    command: metrics
+    arguments:
+      DIRWATCH: "/etc,/var/log"
+      DIRWATCH_RECURSE: false

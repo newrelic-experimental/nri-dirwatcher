@@ -1,0 +1,10 @@
+name: com.newrelic.fs
+description: Reports linux filesystem metrics
+protocol_version: 2
+os: linux
+
+commands:
+  metrics:
+    command:
+      - ./fs/fs
+    interval: 30
