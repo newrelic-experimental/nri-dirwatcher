@@ -98,7 +98,9 @@ instances:
 
 ## Development
 
-All `./vendor` assets are included while developing
-`source.datanerd.us/FIT/nri-common/...` common packages.
+1. Clone Repo
+2. Run `dep ensure`
 
-Use `./build.sh fs` to build installation packages and/or Release.
+To build:
+
+`./build.sh dirwatcher`
