@@ -27,7 +27,7 @@
 
 [[constraint]]
   name = "github.com/newrelic/infra-integrations-sdk"
-  version = "3.0.2"
+  version = "3.6.5"
 
 [[constraint]]
   branch = "master"

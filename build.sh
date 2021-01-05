@@ -8,27 +8,28 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+NRI_NAME="nri-$1"
 HOME=$(pwd)
-PATH_WINDOWS="build/windows/newrelic-$1"
-PATH_LINUX="build/linux/newrelic-$1"
+PATH_WINDOWS="build/windows/$NRI_NAME"
+PATH_LINUX="build/linux/$NRI_NAME"
 
 rm -rf build/ &>/dev/null
 
 if ls *windows.yml &>/dev/null ; then
 
   echo "Making windows 386 build"
-  GOOS=windows GOARCH=386 go build -o "$PATH_WINDOWS/$1_windows_386.exe" src/*.go
+  GOOS=windows GOARCH=386 go build -o "$PATH_WINDOWS/${NRI_NAME}_windows_386.exe" src/*.go
 
   echo "Making windows amd64 build"
-  GOOS=windows GOARCH=amd64 go build -o "$PATH_WINDOWS/$1_windows_amd64.exe" src/*.go
+  GOOS=windows GOARCH=amd64 go build -o "$PATH_WINDOWS/${NRI_NAME}_windows_amd64.exe" src/*.go
 
-  echo "Making windows .zip package"
+  echo "Making windows .zip package"za
   #cp etc/install.ps1 $PATH_WINDOWS
   cp *windows.yml $PATH_WINDOWS
   cp README.md $PATH_WINDOWS
   cp LICENSE $PATH_WINDOWS
 
-  echo "\$IntegrationName = \"$1\"" > $PATH_WINDOWS/install.ps1
+  echo "\$IntegrationName = \"$NRI_NAME\"" > $PATH_WINDOWS/install.ps1
   cat <<'EOF' >> $PATH_WINDOWS/install.ps1
 
   $ARCH = $ENV:PROCESSOR_ARCHITECTURE.toLower()
@@ -67,9 +68,9 @@ if ls *windows.yml &>/dev/null ; then
 
   Copy-item -Force -Recurse $script_dir\$ExecutableName -Destination $definition_dir\$IntegrationName\"$IntegrationName.exe"
 
-  Copy-item -Force $script_dir\newrelic-$IntegrationName-definition-windows.yml -Destination $definition_dir
+  Copy-item -Force $script_dir\$IntegrationName-definition-windows.yml -Destination $definition_dir
 
-  Copy-item -Force $script_dir\newrelic-$IntegrationName-config-windows.yml -Destination $config_dir
+  Copy-item -Force $script_dir\$IntegrationName-config-windows.yml -Destination $config_dir
 
 
   write-host " ...finished.  "
@@ -95,8 +96,8 @@ if ls *windows.yml &>/dev/null ; then
 EOF
 
   cd build/windows
-  zip newrelic-$1-ohi.zip "newrelic-$1"/*
-  mv newrelic-$1-ohi.zip ../
+  zip $NRI_NAME.zip "$NRI_NAME"/*
+  mv $NRI_NAME.zip ../
   cd $HOME
 
 fi
@@ -104,10 +105,10 @@ fi
 if ls *linux.yml &>/dev/null; then
 
   echo "Making linux 386 build"
-  GOOS=linux GOARCH=386 go build -o "$PATH_LINUX/$1_linux_386" src/*.go
+  GOOS=linux GOARCH=386 go build -o "$PATH_LINUX/${NRI_NAME}_linux_386" src/*.go
 
   echo "Making linux amd64 build"
-  GOOS=linux GOARCH=amd64 go build -o "$PATH_LINUX/$1_linux_amd64" src/*.go
+  GOOS=linux GOARCH=amd64 go build -o "$PATH_LINUX/${NRI_NAME}_linux_amd64" src/*.go
 
   echo "Making linux package"
   cp *linux.yml $PATH_LINUX
@@ -115,7 +116,7 @@ if ls *linux.yml &>/dev/null; then
   cp LICENSE $PATH_LINUX
 
   echo "#!/bin/bash" > $PATH_LINUX/install.sh
-  echo "INTEGRATION_NAME=\"$1\"" >> $PATH_LINUX/install.sh
+  echo "INTEGRATION_NAME=\"$NRI_NAME\"" >> $PATH_LINUX/install.sh
   echo "$TEMPLATE_LINUX" >> $PATH_LINUX/install.sh
 
 
@@ -181,16 +182,11 @@ if ls *linux.yml &>/dev/null; then
   fi
 EOF
 
-
   chmod +x $PATH_LINUX/install.sh
 
   cd build/linux
-  tar -czvf newrelic-$1-ohi.tar.gz "newrelic-$1"/*
-  mv newrelic-$1-ohi.tar.gz ../
+  tar -czvf $NRI_NAME.tar.gz "$NRI_NAME"/*
+  mv $NRI_NAME.tar.gz ../
   cd $HOME
 
 fi
-
-#echo "Creating newrelic-$1-ohi.zip"
-#cd build
-#zip -r newrelic-$1-ohi.zip .

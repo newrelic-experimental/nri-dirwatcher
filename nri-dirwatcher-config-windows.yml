@@ -1,0 +1,13 @@
+integration_name: com.newrelic.dirwatcher
+
+instances:
+  - name: com.newrelic.dirwatcher.progfiles
+    command: metrics
+    arguments:
+      DIRWATCH: "C:\\Program Files,C:\\ProgramData"
+      DIRWATCH_RECURSE: true
+  - name: com.newrelic.dirwatcher.temp
+    command: metrics
+    arguments:
+      DIRWATCH: "C:\\temp"
+      DIRWATCH_RECURSE: false

@@ -3,3 +3,7 @@ bin/
 build/
 .DS_Store
 vendor/
+go/
+*.lock
+*.sum
+*.txt

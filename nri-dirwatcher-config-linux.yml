@@ -1,12 +1,12 @@
-integration_name: com.newrelic.fs
+integration_name: com.newrelic.dirwatcher
 
 instances:
-  - name: com.newrelic.fs.tmp
+  - name: com.newrelic.dirwatcher.tmp
     command: metrics
     arguments:
       DIRWATCH: "/tmp"
       DIRWATCH_RECURSE: true
-  - name: com.newrelic.fs.other
+  - name: com.newrelic.dirwatcher.other
     command: metrics
     arguments:
       DIRWATCH: "/etc,/var/log"
