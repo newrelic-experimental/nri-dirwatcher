@@ -1,6 +1,6 @@
 [![New Relic Experimental header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Experimental.png)](https://opensource.newrelic.com/oss-category/#new-relic-experimental)
 
-# New Relic Integration for Directory Monitoring (nri-dirwatcher)
+# New Relic integration for Directory Monitoring (nri-dirwatcher)
 
 On-Host Integration for New Relic Infrastructure to watch files in a given directory.
 
